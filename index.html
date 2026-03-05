@@ -1,450 +1,833 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>株式ダッシュボード</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
+/* ═══════════════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans JP',sans-serif;background:#080b12;color:#dde1f0;min-height:100vh}
-:root{
-  --bg0:#080b12;--bg1:#0d1120;--bg2:#131828;--bg3:#1a2035;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
-  --accent:#3d7fff;--accent2:rgba(61,127,255,0.15);
-  --up:#29d9a0;--up2:rgba(41,217,160,0.1);
-  --dn:#f0587c;--dn2:rgba(240,88,124,0.1);
-  --gold:#d4a84b;--muted:#5a6080;--muted2:#8890b0;--text:#dde1f0;
-  --mono:'IBM Plex Mono',monospace;
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:#05080f;
+  color:#d4d8ee;
+  min-height:100vh;
+  overflow-x:hidden;
 }
-.root{min-height:100vh;background:var(--bg0);position:relative;overflow-x:hidden}
-.glow{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
-.g1{width:600px;height:400px;top:-100px;left:-100px;background:rgba(61,127,255,0.05)}
-.g2{width:500px;height:350px;bottom:0;right:-80px;background:rgba(41,217,160,0.04)}
 
-.hdr{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);background:rgba(8,11,18,0.92);backdrop-filter:blur(16px);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-box{width:32px;height:32px;border:1.5px solid var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);box-shadow:0 0 10px rgba(61,127,255,0.2)}
-.logo-name{font-size:13px;font-weight:500;letter-spacing:0.04em}
-.logo-sub{font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:0.1em;margin-top:1px}
-.hdr-r{display:flex;align-items:center;gap:12px}
-.live{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--up);background:var(--up2);border:1px solid rgba(41,217,160,0.25);padding:3px 9px;border-radius:20px;letter-spacing:0.1em}
-.ldot{width:5px;height:5px;border-radius:50%;background:var(--up);animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-.clk{font-family:var(--mono);font-size:10px;color:var(--muted)}
+/* ═══════════════════════════════════════════════════════════════
+   CSS VARIABLES
+═══════════════════════════════════════════════════════════════ */
+:root{
+  --bg0:#05080f;
+  --bg1:#090d18;
+  --bg2:#0e1422;
+  --bg3:#141c2e;
+  --bg4:#1a2438;
 
-.api-wrap{margin:18px 20px 0;background:rgba(61,127,255,0.07);border:1px solid rgba(61,127,255,0.25);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.api-text{font-size:12px;color:var(--muted2);flex:1;min-width:180px;line-height:1.6}
-.api-text a{color:var(--accent);text-decoration:none}
-.api-text a:hover{text-decoration:underline}
-.api-row{display:flex;gap:7px;flex-shrink:0;align-items:center;flex-wrap:wrap}
-.api-in{background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:7px 11px;font-family:var(--mono);font-size:12px;color:var(--text);outline:none;width:230px;transition:border-color 0.2s}
-.api-in:focus{border-color:var(--accent)}
-.api-in::placeholder{color:var(--muted)}
-.api-saved{font-family:var(--mono);font-size:11px;color:var(--up);white-space:nowrap}
+  --border0:rgba(255,255,255,0.04);
+  --border1:rgba(255,255,255,0.08);
+  --border2:rgba(255,255,255,0.14);
 
-.main{padding:20px;position:relative;z-index:1;max-width:1400px;margin:0 auto}
+  --accent:#4080ff;
+  --accent-glow:rgba(64,128,255,0.2);
+  --accent2:#00d4aa;
+  --accent2-glow:rgba(0,212,170,0.15);
 
-.add-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.inp-wrap{position:relative}
-.ticker-in{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 13px 9px 38px;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;width:190px;letter-spacing:0.06em;transition:border-color 0.2s,box-shadow 0.2s}
-.ticker-in:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(61,127,255,0.1)}
+  --up:#00d4aa;
+  --up-bg:rgba(0,212,170,0.08);
+  --dn:#ff4d72;
+  --dn-bg:rgba(255,77,114,0.08);
+  --flat:#6b7299;
+
+  --gold:#e8b84b;
+  --gold-bg:rgba(232,184,75,0.08);
+
+  --muted:#4a5270;
+  --muted2:#7880a0;
+  --text:#d4d8ee;
+  --text2:#a0a8c8;
+
+  --mono:'IBM Plex Mono',monospace;
+
+  --r-sm:6px;
+  --r-md:10px;
+  --r-lg:14px;
+  --r-xl:18px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AMBIENT GLOW BACKGROUND
+═══════════════════════════════════════════════════════════════ */
+.bg-glow{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+}
+.bg-glow::before{
+  content:'';position:absolute;
+  width:900px;height:600px;top:-200px;left:-200px;
+  background:radial-gradient(ellipse,rgba(64,128,255,0.06) 0%,transparent 70%);
+}
+.bg-glow::after{
+  content:'';position:absolute;
+  width:700px;height:500px;bottom:-100px;right:-150px;
+  background:radial-gradient(ellipse,rgba(0,212,170,0.05) 0%,transparent 70%);
+}
+.grid-overlay{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT WRAPPER
+═══════════════════════════════════════════════════════════════ */
+.page{position:relative;z-index:1;min-height:100vh}
+
+/* ═══════════════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════════════ */
+.hdr{
+  position:sticky;top:0;z-index:100;
+  border-bottom:1px solid var(--border1);
+  background:rgba(5,8,15,0.85);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+}
+.hdr-left{display:flex;align-items:center;gap:14px}
+.logo-mark{
+  width:34px;height:34px;border-radius:9px;
+  border:1.5px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:14px;font-weight:600;
+  color:var(--accent);
+  box-shadow:0 0 16px var(--accent-glow),inset 0 0 8px rgba(64,128,255,0.05);
+  position:relative;
+}
+.logo-mark::after{
+  content:'';position:absolute;inset:-3px;border-radius:12px;
+  border:1px solid rgba(64,128,255,0.15);
+}
+.logo-text{}
+.logo-name{font-size:14px;font-weight:500;letter-spacing:0.03em;color:var(--text)}
+.logo-sub{font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:0.15em;margin-top:1px}
+
+.hdr-right{display:flex;align-items:center;gap:12px}
+.live-badge{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
+  color:var(--up);
+  background:var(--up-bg);
+  border:1px solid rgba(0,212,170,0.2);
+  padding:4px 10px;border-radius:20px;
+}
+.live-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--up);
+  animation:pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,212,170,0.4)}50%{opacity:0.7;box-shadow:0 0 0 4px transparent}}
+.clock{font-family:var(--mono);font-size:11px;color:var(--muted2);letter-spacing:0.06em}
+
+/* Worker URL設定 */
+.worker-wrap{
+  margin:20px 24px 0;
+  background:linear-gradient(135deg,rgba(64,128,255,0.06),rgba(0,212,170,0.04));
+  border:1px solid rgba(64,128,255,0.2);
+  border-radius:var(--r-lg);
+  padding:14px 18px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.worker-ico{font-size:18px}
+.worker-info{flex:1;min-width:200px}
+.worker-label{font-size:11px;color:var(--text2);line-height:1.6}
+.worker-label a{color:var(--accent);text-decoration:none}
+.worker-label a:hover{text-decoration:underline}
+.worker-label code{
+  font-family:var(--mono);font-size:10px;
+  background:rgba(255,255,255,0.06);
+  padding:1px 5px;border-radius:3px;
+  color:var(--accent2);
+}
+.worker-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.worker-in{
+  font-family:var(--mono);font-size:11px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--r-sm);padding:7px 12px;
+  color:var(--text);outline:none;width:360px;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.worker-in:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.worker-in::placeholder{color:var(--muted);font-size:10px}
+.worker-saved{font-family:var(--mono);font-size:10px;color:var(--up)}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════════════════════════ */
+.main{padding:20px 24px 40px;max-width:1600px;margin:0 auto}
+
+/* ADD BAR */
+.add-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.inp-wrap{position:relative;flex-shrink:0}
+.inp-ico{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:13px;pointer-events:none;
+}
+.ticker-in{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-md);
+  padding:10px 14px 10px 38px;
+  font-family:var(--mono);font-size:13px;color:var(--text);
+  outline:none;width:200px;letter-spacing:0.06em;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.ticker-in:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
 .ticker-in::placeholder{color:var(--muted);font-size:11px;letter-spacing:0}
-.inp-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
-.btn{padding:9px 16px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all 0.18s;white-space:nowrap;font-family:'Noto Sans JP',sans-serif}
-.btn-p{background:var(--accent);color:#fff}
-.btn-p:hover{background:#5590ff;box-shadow:0 0 16px rgba(61,127,255,0.3)}
-.btn-p:disabled{opacity:0.4;cursor:not-allowed}
-.btn-g{background:transparent;color:var(--muted2);border:1px solid var(--border2)}
-.btn-g:hover{color:var(--text);background:var(--bg3)}
-.btn-s{padding:6px 11px;font-size:11px;border-radius:6px}
 
-.pre-row{display:flex;align-items:center;gap:7px;margin-bottom:18px;flex-wrap:wrap}
-.pre-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;margin-right:2px}
-.chip{padding:4px 12px;border-radius:20px;font-size:11px;background:transparent;border:1px solid var(--border2);color:var(--muted2);cursor:pointer;transition:all 0.15s;font-family:'Noto Sans JP',sans-serif}
-.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent2)}
+/* BUTTONS */
+.btn{
+  padding:10px 18px;border-radius:var(--r-md);
+  font-size:12px;font-weight:500;cursor:pointer;border:none;
+  transition:all 0.18s;white-space:nowrap;
+  font-family:'Noto Sans JP',sans-serif;letter-spacing:0.02em;
+}
+.btn-primary{
+  background:var(--accent);color:#fff;
+  box-shadow:0 2px 12px rgba(64,128,255,0.25);
+}
+.btn-primary:hover{background:#5590ff;box-shadow:0 4px 20px rgba(64,128,255,0.4)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none}
+.btn-ghost{
+  background:transparent;color:var(--muted2);
+  border:1px solid var(--border2);
+}
+.btn-ghost:hover{color:var(--text);background:var(--bg4)}
+.btn-sm{padding:7px 13px;font-size:11px;border-radius:var(--r-sm)}
 
-.ctrl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.cnt{font-family:var(--mono);font-size:11px;color:var(--muted)}
-.cnt em{color:var(--muted2);font-style:normal}
-.ref-btn{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--border2);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:10px;color:var(--muted2);cursor:pointer;transition:all 0.18s}
+/* PRESETS */
+.pre-row{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.pre-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.14em;flex-shrink:0}
+.chip{
+  padding:5px 14px;border-radius:20px;font-size:11px;
+  background:transparent;border:1px solid var(--border2);color:var(--muted2);
+  cursor:pointer;transition:all 0.15s;font-family:'Noto Sans JP',sans-serif;
+}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
+.chip:disabled{opacity:0.4;cursor:not-allowed}
+
+/* CONTROLS ROW */
+.ctrl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.ctrl-left{display:flex;align-items:center;gap:10px}
+.count-badge{
+  font-family:var(--mono);font-size:10px;color:var(--muted2);
+  background:var(--bg3);border:1px solid var(--border1);
+  padding:3px 10px;border-radius:20px;
+}
+.count-badge em{color:var(--accent);font-style:normal;font-weight:600}
+.ref-btn{
+  display:flex;align-items:center;gap:6px;
+  background:transparent;border:1px solid var(--border2);border-radius:var(--r-sm);
+  padding:6px 13px;font-family:var(--mono);font-size:10px;color:var(--muted2);
+  cursor:pointer;transition:all 0.18s;letter-spacing:0.06em;
+}
 .ref-btn:hover{border-color:var(--accent);color:var(--accent)}
 .ref-btn:disabled{opacity:0.4;cursor:not-allowed}
-.spin{animation:rot 0.7s linear infinite}
-@keyframes rot{to{transform:rotate(360deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin 0.7s linear infinite}
 
-.tbl-card{background:var(--bg1);border:1px solid var(--border);border-radius:13px;overflow:hidden}
+/* ═══════════════════════════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════════════════════════ */
+.tbl-card{
+  background:var(--bg1);
+  border:1px solid var(--border1);
+  border-radius:var(--r-xl);
+  overflow:hidden;
+  box-shadow:0 4px 40px rgba(0,0,0,0.3);
+}
 table{width:100%;border-collapse:collapse}
-thead tr{border-bottom:1px solid var(--border)}
-th{padding:12px 16px;text-align:right;font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:0.14em;font-weight:400;white-space:nowrap}
-th:first-child,th:nth-child(2){text-align:left}
-tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.12s}
+
+/* Sticky header */
+thead{position:sticky;top:60px;z-index:10;background:var(--bg2)}
+thead tr{border-bottom:1px solid var(--border1)}
+th{
+  padding:12px 16px;text-align:right;
+  font-family:var(--mono);font-size:8px;color:var(--muted);
+  letter-spacing:0.16em;font-weight:400;white-space:nowrap;
+  user-select:none;
+}
+th:first-child{text-align:left;padding-left:20px}
+th:nth-child(2){text-align:left}
+th.sortable{cursor:pointer}
+th.sortable:hover{color:var(--text2)}
+
+tbody tr{
+  border-bottom:1px solid var(--border0);
+  transition:background 0.12s;
+  position:relative;
+}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--bg3)}
-td{padding:14px 16px;font-size:12px;text-align:right;white-space:nowrap;vertical-align:middle}
-td:first-child{text-align:left}
+
+td{
+  padding:14px 16px;font-size:12px;text-align:right;
+  white-space:nowrap;vertical-align:middle;
+}
+td:first-child{text-align:left;padding-left:20px}
 td:nth-child(2){text-align:left}
 
-.cc{display:flex;flex-direction:column;gap:2px}
-.cm{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text);letter-spacing:0.04em}
-.cmk{font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:0.1em}
-.nm{font-size:12px;color:var(--muted2);font-weight:300;max-width:140px;overflow:hidden;text-overflow:ellipsis;display:block}
-.pv{font-family:var(--mono);font-size:15px;font-weight:600}
-.chgc{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
-.ca{font-family:var(--mono);font-size:12px;font-weight:600}
-.cp{font-family:var(--mono);font-size:10px;opacity:0.75}
-.uc{color:var(--up)}.dc{color:var(--dn)}.nc{color:var(--muted2)}
-.mt{font-family:var(--mono);font-size:11px;color:var(--muted2)}
-.mg{font-family:var(--mono);font-size:11px;color:var(--gold)}
+/* Flash animations */
+@keyframes flash-up{0%{background:rgba(0,212,170,0.18)}100%{background:transparent}}
+@keyframes flash-dn{0%{background:rgba(255,77,114,0.18)}100%{background:transparent}}
+.flash-up{animation:flash-up 1.4s ease}
+.flash-dn{animation:flash-dn 1.4s ease}
+
+/* Cell parts */
+.code-cell{display:flex;flex-direction:column;gap:3px}
+.code-num{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text);letter-spacing:0.03em}
+.code-ex{font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:0.12em}
+.name-text{font-size:12px;color:var(--text2);font-weight:300;max-width:150px;overflow:hidden;text-overflow:ellipsis;display:block}
+
+.price-val{font-family:var(--mono);font-size:16px;font-weight:600;letter-spacing:0.02em}
+.chg-cell{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.chg-abs{font-family:var(--mono);font-size:12px;font-weight:600}
+.chg-pct{font-family:var(--mono);font-size:10px;opacity:0.7}
+.color-up{color:var(--up)}.color-dn{color:var(--dn)}.color-flat{color:var(--flat)}
+
+.metric{font-family:var(--mono);font-size:11px;color:var(--text2)}
+.metric-gold{font-family:var(--mono);font-size:11px;color:var(--gold)}
+.metric-green{font-family:var(--mono);font-size:11px;color:var(--up)}
 .na{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:17px;padding:3px 7px;border-radius:4px;line-height:1;transition:all 0.15s}
-.del:hover{color:var(--dn);background:var(--dn2)}
-.ldc{color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:0.08em}
-.erc{color:var(--dn);font-family:var(--mono);font-size:10px}
-.sp{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--accent);animation:rot 0.7s linear infinite;vertical-align:middle;margin-right:5px}
 
-@keyframes fup{0%{background:var(--up2)}100%{background:transparent}}
-@keyframes fdn{0%{background:var(--dn2)}100%{background:transparent}}
-.fu{animation:fup 1.2s ease}.fd{animation:fdn 1.2s ease}
+.del-btn{
+  background:none;border:none;cursor:pointer;
+  color:var(--muted);font-size:18px;
+  padding:2px 8px;border-radius:4px;line-height:1;
+  transition:all 0.15s;
+}
+.del-btn:hover{color:var(--dn);background:var(--dn-bg)}
 
-.empty{text-align:center;padding:60px 20px}
-.ei{font-size:36px;opacity:0.2;margin-bottom:10px}
-.et{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.08em}
+/* Loading / error rows */
+.loading-cell{color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:0.08em}
+.error-cell{color:var(--dn);font-family:var(--mono);font-size:10px}
+.spinner-inline{
+  display:inline-block;width:11px;height:11px;border-radius:50%;
+  border:2px solid var(--border2);border-top-color:var(--accent);
+  animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;
+}
 
-.toast{position:fixed;bottom:24px;right:20px;z-index:999;background:var(--bg2);border:1px solid;border-radius:10px;padding:11px 16px;font-size:11px;font-family:var(--mono);animation:su 0.25s ease;max-width:340px;line-height:1.5}
-.te{border-color:var(--dn);color:var(--dn)}.to{border-color:var(--up);color:var(--up)}
-@keyframes su{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+/* Empty state */
+.empty-state{text-align:center;padding:80px 20px}
+.empty-icon{font-size:48px;opacity:0.12;margin-bottom:16px}
+.empty-text{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.1em;line-height:1.8}
 
-.foot{margin-top:14px;font-family:var(--mono);font-size:9px;color:var(--muted);text-align:right;line-height:1.8}
+/* ═══════════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════════ */
+.foot{
+  margin-top:16px;
+  font-family:var(--mono);font-size:9px;color:var(--muted);
+  text-align:right;line-height:2;letter-spacing:0.06em;
+}
 
-@media(max-width:860px){.hm{display:none}}
-@media(max-width:580px){.hs{display:none} th,td{padding:10px 8px} .ticker-in{width:150px} .api-in{width:100%}}
+/* ═══════════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:28px;right:24px;z-index:999;
+  background:var(--bg3);border:1px solid;
+  border-radius:var(--r-md);padding:12px 18px;
+  font-size:11px;font-family:var(--mono);
+  animation:toast-in 0.25s ease;max-width:360px;line-height:1.5;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+.toast-ok{border-color:rgba(0,212,170,0.4);color:var(--up)}
+.toast-err{border-color:rgba(255,77,114,0.4);color:var(--dn)}
+@keyframes toast-in{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════════════ */
+@media(max-width:1100px){.hide-xl{display:none}}
+@media(max-width:860px){.hide-lg{display:none}}
+@media(max-width:640px){
+  .hide-md{display:none}
+  .hdr{padding:0 16px}
+  .main{padding:16px 14px 32px}
+  .worker-wrap{margin:14px 14px 0}
+  th,td{padding:11px 10px}
+  td:first-child,th:first-child{padding-left:14px}
+  .worker-in{width:100%}
+  .ticker-in{width:160px}
+}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const {useState,useEffect,useRef,useCallback} = React;
+<div class="bg-glow"></div>
+<div class="grid-overlay"></div>
+<div class="page">
 
-const FINNHUB = "https://finnhub.io/api/v1";
-const LS_KEY  = "stk_apikey";
-const LS_TICK = "stk_tickers";
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-left">
+    <div class="logo-mark">株</div>
+    <div class="logo-text">
+      <div class="logo-name">株式ダッシュボード</div>
+      <div class="logo-sub">JAPAN EQUITY MONITOR</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    <div class="clock" id="clock"></div>
+  </div>
+</header>
+
+<!-- WORKER URL 設定 -->
+<div class="worker-wrap">
+  <div class="worker-ico">⚙️</div>
+  <div class="worker-info">
+    <div class="worker-label">
+      <a href="https://workers.cloudflare.com/" target="_blank" rel="noreferrer">Cloudflare Workers</a>
+      にデプロイした <code>worker.js</code> のURL を入力してください（例: <code>https://stock-proxy.yourname.workers.dev</code>）。
+      設定するとリアルタイムデータが取得できます。
+    </div>
+  </div>
+  <div class="worker-row">
+    <span id="worker-saved-badge" class="worker-saved" style="display:none">✓ 設定済み</span>
+    <input class="worker-in" id="worker-in" type="url"
+      placeholder="https://your-worker.workers.dev"
+      autocomplete="off" spellcheck="false"/>
+    <button class="btn btn-primary btn-sm" onclick="saveWorker()">保存</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- 追加バー -->
+  <div class="add-bar">
+    <div class="inp-wrap">
+      <span class="inp-ico">🔍</span>
+      <input class="ticker-in" id="ticker-in" type="text"
+        placeholder="証券コード（例: 7203）"
+        maxlength="5" autocomplete="off" spellcheck="false"/>
+    </div>
+    <button class="btn btn-primary" id="add-btn" onclick="addStock()">追加</button>
+    <button class="btn btn-ghost" onclick="clearAll()">クリア</button>
+  </div>
+
+  <!-- プリセット -->
+  <div class="pre-row">
+    <span class="pre-lbl">PRESET</span>
+    <button class="chip" onclick="loadPreset('nikkei')">日経主要</button>
+    <button class="chip" onclick="loadPreset('tech')">国内テック</button>
+    <button class="chip" onclick="loadPreset('bank')">メガバンク</button>
+    <button class="chip" onclick="loadPreset('dividend')">高配当</button>
+  </div>
+
+  <!-- コントロール -->
+  <div class="ctrl-row">
+    <div class="ctrl-left">
+      <div class="count-badge"><em id="row-count">0</em> 銘柄</div>
+    </div>
+    <button class="ref-btn" id="ref-btn" onclick="refreshAll()">
+      <svg id="ref-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/>
+      </svg>
+      <span id="ref-label">更新</span>
+    </button>
+  </div>
+
+  <!-- テーブル -->
+  <div class="tbl-card">
+    <table>
+      <thead>
+        <tr>
+          <th>コード</th>
+          <th>銘柄名</th>
+          <th>株価 (円)</th>
+          <th>前日比</th>
+          <th class="hide-md">PER</th>
+          <th class="hide-md">PBR</th>
+          <th class="hide-lg">EPS</th>
+          <th class="hide-lg">配当/株</th>
+          <th class="hide-lg">配当利回り</th>
+          <th class="hide-xl">配当性向</th>
+          <th class="hide-xl">ROE</th>
+          <th class="hide-xl">自己資本比率</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="stock-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="foot">
+    データ: Yahoo Finance（準リアルタイム・約15分遅延） · 60秒ごと自動更新 · 銘柄リストはブラウザに保存<br>
+    投資判断には必ず公式情報をご確認ください ·「—」はデータ非公開または非対応
+  </div>
+</div>
+
+</div><!-- /page -->
+
+<!-- TOAST -->
+<div class="toast" id="toast" style="display:none"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   CONSTANTS
+═══════════════════════════════════════════════════════════════ */
+const LS_TICKERS = "ekd_tickers_v4";
+const LS_WORKER  = "ekd_worker_url";
 
 const PRESETS = {
   nikkei:   [{code:"7203",name:"トヨタ自動車"},{code:"6758",name:"ソニーG"},{code:"9984",name:"ソフトバンクG"},{code:"6861",name:"キーエンス"},{code:"8306",name:"三菱UFJ"}],
-  tech:     [{code:"6758",name:"ソニーG"},{code:"9984",name:"ソフトバンクG"},{code:"6367",name:"ダイキン工業"},{code:"6501",name:"日立製作所"},{code:"4755",name:"楽天G"}],
+  tech:     [{code:"6758",name:"ソニーG"},{code:"6367",name:"ダイキン工業"},{code:"6501",name:"日立製作所"},{code:"6594",name:"ニデック"},{code:"8035",name:"東京エレクトロン"}],
   bank:     [{code:"8306",name:"三菱UFJ"},{code:"8316",name:"三井住友FG"},{code:"8411",name:"みずほFG"}],
-  dividend: [{code:"8058",name:"三菱商事"},{code:"9432",name:"NTT"},{code:"4502",name:"武田薬品"},{code:"8309",name:"三井住友T"},{code:"2914",name:"JT"}],
+  dividend: [{code:"8058",name:"三菱商事"},{code:"9432",name:"NTT"},{code:"4502",name:"武田薬品"},{code:"2914",name:"JT"},{code:"1605",name:"INPEX"}],
 };
-const PLB = {nikkei:"日経主要",tech:"国内テック",bank:"メガバンク",dividend:"高配当"};
 
-const lsGet = (k,fb) => { try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb}catch{return fb} };
-const lsSet = (k,v)  => { try{localStorage.setItem(k,JSON.stringify(v))}catch{} };
-const fmt    = (v,d=2)=> v==null||isNaN(v)?null:Number(v).toLocaleString("ja-JP",{minimumFractionDigits:d,maximumFractionDigits:d});
-const fmtInt = v      => v==null||isNaN(v)?null:Math.round(v).toLocaleString("ja-JP");
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════════ */
+let rows      = [];   // [{code, name, data, loading, error}]
+let workerUrl = "";
+let busy      = false;
+const flashMap = {};
+let toastTimer = null;
+let refreshTimer = null;
 
-async function fetchStock(code, apiKey) {
-  const sym = `TYO:${code}`;
-  const tk  = `&token=${apiKey}`;
-  const [qR,mR,pR] = await Promise.all([
-    fetch(`${FINNHUB}/quote?symbol=${sym}${tk}`),
-    fetch(`${FINNHUB}/stock/metric?symbol=${sym}&metric=all${tk}`),
-    fetch(`${FINNHUB}/stock/profile2?symbol=${sym}${tk}`),
-  ]);
-  if (!qR.ok) throw new Error(`HTTP ${qR.status}`);
-  const q = await qR.json();
-  const m = mR.ok ? (await mR.json()).metric || {} : {};
-  const p = pR.ok ? await pR.json() : {};
-  if (!q.c || q.c === 0) throw new Error("データなし（コードを確認）");
-  const eps = m.epsBasicExclExtraItemsTTM ?? m.epsTTM ?? null;
-  const div = m.dividendsPerShareAnnual ?? null;
-  return {
-    code, name: p.name || code,
-    price: q.c, change: q.d ?? (q.c-q.pc),
-    changePct: q.dp ?? ((q.c-q.pc)/q.pc*100),
-    per: m.peBasicExclExtraTTM ?? m.peTTM ?? null,
-    pbr: m.pbAnnual ?? null, eps, divPerShare: div,
-    divYield: m.dividendYieldIndicatedAnnual ?? null,
-    payoutRatio: (div&&eps&&eps!==0) ? div/eps*100 : (m.payoutRatioAnnual??null),
-  };
+/* ═══════════════════════════════════════════════════════════════
+   STORAGE HELPERS
+═══════════════════════════════════════════════════════════════ */
+const lsGet = (k, fb) => { try{ const v=localStorage.getItem(k); return v?JSON.parse(v):fb; }catch{ return fb; }};
+const lsSet = (k, v)  => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} };
+
+/* ═══════════════════════════════════════════════════════════════
+   FORMAT HELPERS
+═══════════════════════════════════════════════════════════════ */
+const fmt    = (v, d=2) => v==null||isNaN(v) ? null : Number(v).toLocaleString("ja-JP",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtInt = (v)       => v==null||isNaN(v) ? null : Math.round(v).toLocaleString("ja-JP");
+
+function naCell(v, cls="metric") {
+  return v == null
+    ? `<span class="na">—</span>`
+    : `<span class="${cls}">${v}</span>`;
 }
 
-function M({v, gold=false, cls=""}) {
-  return <td className={cls}>{v==null?<span className="na">—</span>:<span className={gold?"mg":"mt"}>{v}</span>}</td>;
+/* ═══════════════════════════════════════════════════════════════
+   CLOCK
+═══════════════════════════════════════════════════════════════ */
+function tickClock() {
+  document.getElementById("clock").textContent =
+    new Date().toLocaleTimeString("ja-JP");
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+/* ═══════════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════════ */
+function showToast(msg, type="err") {
+  if (toastTimer) clearTimeout(toastTimer);
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = `toast toast-${type==="ok"?"ok":"err"}`;
+  el.style.display = "block";
+  toastTimer = setTimeout(() => el.style.display="none", 4500);
 }
 
-function App() {
-  const [apiKey, setApiKey] = useState(()=>lsGet(LS_KEY,""));
-  const [apiIn,  setApiIn]  = useState(()=>lsGet(LS_KEY,""));
-  const [rows,   setRows]   = useState([]);
-  const [tickIn, setTickIn] = useState("");
-  const [busy,   setBusy]   = useState(false);
-  const [toast,  setToast]  = useState(null);
-  const [clock,  setClock]  = useState("");
-  const flashMap = useRef({});
-  const toastTmr = useRef(null);
+/* ═══════════════════════════════════════════════════════════════
+   WORKER SETUP
+═══════════════════════════════════════════════════════════════ */
+function saveWorker() {
+  const v = document.getElementById("worker-in").value.trim().replace(/\/+$/, "");
+  if (!v || !v.startsWith("http")) { showToast("有効なURLを入力してください"); return; }
+  workerUrl = v;
+  lsSet(LS_WORKER, v);
+  document.getElementById("worker-saved-badge").style.display = "";
+  showToast("Worker URLを保存しました ✓", "ok");
+  if (rows.length) refreshAll();
+}
 
-  useEffect(()=>{
-    const t=()=>setClock(new Date().toLocaleTimeString("ja-JP"));
-    t(); const id=setInterval(t,1000); return()=>clearInterval(id);
-  },[]);
+function initWorker() {
+  const saved = lsGet(LS_WORKER, "");
+  if (saved) {
+    workerUrl = saved;
+    document.getElementById("worker-in").value = saved;
+    document.getElementById("worker-saved-badge").style.display = "";
+  }
+}
 
-  const showMsg = useCallback((text,type="err")=>{
-    if(toastTmr.current) clearTimeout(toastTmr.current);
-    setToast({text,type});
-    toastTmr.current=setTimeout(()=>setToast(null),4000);
-  },[]);
+/* ═══════════════════════════════════════════════════════════════
+   API FETCH  (Worker proxy → Yahoo Finance)
+═══════════════════════════════════════════════════════════════ */
+async function fetchStock(code) {
+  if (!workerUrl) throw new Error("Worker URLが未設定です（上の欄に入力してください）");
+  const res = await fetch(`${workerUrl}?code=${code}`);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
 
-  const applyResults = useCallback((codes, results, setFn)=>{
-    setFn(prev=>prev.map((r,_)=>{
-      const i=codes.indexOf(r.code);
-      if(i<0) return r;
-      const res=results[i];
-      if(res.status==="fulfilled"){
-        const d=res.value;
-        const old=r.data?.price;
-        if(old!=null&&d.price!=null&&old!==d.price){
-          flashMap.current[r.code]=d.price>old?"fu":"fd";
-          setTimeout(()=>{flashMap.current[r.code]=null;setFn(x=>[...x]);},1300);
-        }
-        return {...r,data:d,name:d.name,loading:false,error:null};
+/* ═══════════════════════════════════════════════════════════════
+   APPLY FETCH RESULTS TO STATE
+═══════════════════════════════════════════════════════════════ */
+function applyResults(codes, results) {
+  codes.forEach((code, i) => {
+    const idx = rows.findIndex(r => r.code === code);
+    if (idx < 0) return;
+    const res = results[i];
+    if (res.status === "fulfilled") {
+      const d = res.value;
+      const oldPrice = rows[idx].data?.price;
+      if (oldPrice != null && d.price != null && oldPrice !== d.price) {
+        flashMap[code] = d.price > oldPrice ? "flash-up" : "flash-dn";
+        setTimeout(() => { delete flashMap[code]; renderTable(); }, 1500);
       }
-      return {...r,loading:false,error:results[i].reason?.message??"取得失敗"};
-    }));
-  },[]);
-
-  // Restore saved tickers on mount
-  useEffect(()=>{
-    const saved=lsGet(LS_TICK,[]);
-    const key=lsGet(LS_KEY,"");
-    if(!saved.length) return;
-    const init=saved.map(t=>({code:t.code,name:t.name||t.code,data:null,loading:!!key,error:null}));
-    setRows(init);
-    if(key){
-      Promise.allSettled(saved.map(t=>fetchStock(t.code,key)))
-        .then(results=>applyResults(saved.map(t=>t.code),results,setRows));
+      rows[idx] = { ...rows[idx], data: d, name: d.name, loading: false, error: null };
+    } else {
+      rows[idx] = { ...rows[idx], loading: false, error: res.reason?.message ?? "取得失敗" };
     }
-  },[applyResults]);
-
-  // 60s auto-refresh
-  useEffect(()=>{
-    const id=setInterval(()=>{
-      setRows(prev=>{
-        if(!prev.length||!apiKey) return prev;
-        const codes=prev.map(r=>r.code);
-        setRows(r=>r.map(x=>({...x,loading:true})));
-        Promise.allSettled(codes.map(c=>fetchStock(c,apiKey)))
-          .then(res=>applyResults(codes,res,setRows));
-        return prev;
-      });
-    },60000);
-    return()=>clearInterval(id);
-  },[apiKey,applyResults]);
-
-  const saveKey = ()=>{
-    const k=apiIn.trim();
-    if(!k){showMsg("APIキーを入力してください");return;}
-    setApiKey(k); lsSet(LS_KEY,k);
-    showMsg("APIキーを保存しました ✓","ok");
-    setRows(prev=>{
-      if(!prev.length) return prev;
-      const codes=prev.map(r=>r.code);
-      const next=prev.map(r=>({...r,loading:true,error:null}));
-      Promise.allSettled(codes.map(c=>fetchStock(c,k)))
-        .then(res=>applyResults(codes,res,setRows));
-      return next;
-    });
-  };
-
-  const addStock = async()=>{
-    const code=tickIn.trim().replace(/\D/g,"");
-    if(!code) return;
-    if(!apiKey){showMsg("先にAPIキーを保存してください");return;}
-    if(rows.find(r=>r.code===code)){showMsg(`${code} は追加済みです`);return;}
-    setTickIn("");
-    const nr={code,name:code,data:null,loading:true,error:null};
-    setRows(prev=>{const n=[...prev,nr];lsSet(LS_TICK,n.map(r=>({code:r.code,name:r.name})));return n;});
-    try{
-      const d=await fetchStock(code,apiKey);
-      setRows(prev=>{const n=prev.map(r=>r.code===code?{...r,data:d,name:d.name,loading:false}:r);lsSet(LS_TICK,n.map(r=>({code:r.code,name:r.name})));return n;});
-    }catch(e){
-      setRows(prev=>prev.map(r=>r.code===code?{...r,loading:false,error:e.message}:r));
-      showMsg(`${code}: ${e.message}`);
-    }
-  };
-
-  const remove = code=>{
-    setRows(prev=>{const n=prev.filter(r=>r.code!==code);lsSet(LS_TICK,n.map(r=>({code:r.code,name:r.name})));return n;});
-  };
-
-  const clearAll = ()=>{setRows([]);lsSet(LS_TICK,[]);};
-
-  const loadPreset = key=>{
-    if(!apiKey){showMsg("先にAPIキーを保存してください");return;}
-    setRows(prev=>{
-      const ex=prev.map(r=>r.code);
-      const add=PRESETS[key].filter(p=>!ex.includes(p.code));
-      if(!add.length){showMsg("既に全銘柄が追加されています");return prev;}
-      const newRows=add.map(p=>({code:p.code,name:p.name,data:null,loading:true,error:null}));
-      const next=[...prev,...newRows];
-      lsSet(LS_TICK,next.map(r=>({code:r.code,name:r.name})));
-      const codes=add.map(p=>p.code);
-      Promise.allSettled(codes.map(c=>fetchStock(c,apiKey)))
-        .then(res=>applyResults(codes,res,setRows));
-      return next;
-    });
-  };
-
-  const refresh = async()=>{
-    if(!rows.length||!apiKey||busy) return;
-    setBusy(true);
-    const codes=rows.map(r=>r.code);
-    setRows(prev=>prev.map(r=>({...r,loading:true})));
-    const res=await Promise.allSettled(codes.map(c=>fetchStock(c,apiKey)));
-    applyResults(codes,res,setRows);
-    setTimeout(()=>setBusy(false),800);
-  };
-
-  return (
-    <div className="root">
-      <div className="glow g1"/><div className="glow g2"/>
-      <header className="hdr">
-        <div className="logo">
-          <div className="logo-box">株</div>
-          <div>
-            <div className="logo-name">株式ダッシュボード</div>
-            <div className="logo-sub">JAPAN EQUITY MONITOR</div>
-          </div>
-        </div>
-        <div className="hdr-r">
-          <div className="live"><div className="ldot"/>LIVE</div>
-          <div className="clk">{clock}</div>
-        </div>
-      </header>
-
-      {/* API key */}
-      <div className="api-wrap">
-        <div style={{fontSize:15}}>🔑</div>
-        <div className="api-text">
-          <a href="https://finnhub.io" target="_blank" rel="noreferrer">finnhub.io</a> の無料APIキーを入力してください。
-          キーはこのブラウザにのみ保存され、外部サーバーへは送信されません。
-          スマホなど別デバイスでも初回だけ入力すれば保存されます。
-        </div>
-        <div className="api-row">
-          {apiKey && <span className="api-saved">✓ 保存済み</span>}
-          <input className="api-in" type="password" placeholder="APIキーを貼り付けてEnter or 保存"
-            value={apiIn} onChange={e=>setApiIn(e.target.value)}
-            onKeyDown={e=>e.key==="Enter"&&saveKey()} />
-          <button className="btn btn-p btn-s" onClick={saveKey}>保存</button>
-        </div>
-      </div>
-
-      <div className="main">
-        <div className="add-bar">
-          <div className="inp-wrap">
-            <span className="inp-ico">🔍</span>
-            <input className="ticker-in" type="text" placeholder="証券コード（例: 7203）"
-              maxLength={5} value={tickIn}
-              onChange={e=>setTickIn(e.target.value)}
-              onKeyDown={e=>e.key==="Enter"&&addStock()} />
-          </div>
-          <button className="btn btn-p" onClick={addStock} disabled={!apiKey}>追加</button>
-          <button className="btn btn-g" onClick={clearAll}>クリア</button>
-        </div>
-
-        <div className="pre-row">
-          <span className="pre-lbl">プリセット</span>
-          {Object.keys(PLB).map(k=>(
-            <button key={k} className="chip" onClick={()=>loadPreset(k)}>{PLB[k]}</button>
-          ))}
-        </div>
-
-        <div className="ctrl-row">
-          <div className="cnt"><em>{rows.length}</em> 銘柄</div>
-          <button className="ref-btn" onClick={refresh} disabled={busy||!rows.length}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={busy?"spin":""}>
-              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/>
-            </svg>
-            {busy?"更新中...":"更新"}
-          </button>
-        </div>
-
-        <div className="tbl-card">
-          <table>
-            <thead>
-              <tr>
-                <th>コード</th><th>銘柄名</th><th>株価</th><th>前日比</th>
-                <th className="hs">PER</th><th className="hs">PBR</th>
-                <th className="hm">EPS</th><th className="hm">配当/株</th>
-                <th className="hm">配当利回り</th><th className="hm">配当性向</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length===0?(
-                <tr><td colSpan={11}>
-                  <div className="empty">
-                    <div className="ei">📊</div>
-                    <div className="et">証券コードを入力して銘柄を追加してください</div>
-                  </div>
-                </td></tr>
-              ):rows.map(r=>{
-                const fl=flashMap.current[r.code]||"";
-                if(r.loading) return(
-                  <tr key={r.code} className={fl}>
-                    <td><div className="cc"><span className="cm">{r.code}</span><span className="cmk">東証</span></div></td>
-                    <td><span className="nm">{r.name}</span></td>
-                    <td colSpan={8} className="ldc"><span className="sp"/>取得中...</td>
-                    <td><button className="del" onClick={()=>remove(r.code)}>×</button></td>
-                  </tr>
-                );
-                if(r.error) return(
-                  <tr key={r.code}>
-                    <td><div className="cc"><span className="cm">{r.code}</span><span className="cmk">東証</span></div></td>
-                    <td><span className="nm">{r.name}</span></td>
-                    <td colSpan={8} className="erc">⚠ {r.error}</td>
-                    <td><button className="del" onClick={()=>remove(r.code)}>×</button></td>
-                  </tr>
-                );
-                const d=r.data;
-                const cc=d.change>0?"uc":d.change<0?"dc":"nc";
-                const sg=d.change>=0?"+":"";
-                return(
-                  <tr key={r.code} className={fl}>
-                    <td><div className="cc"><span className="cm">{d.code}</span><span className="cmk">東証</span></div></td>
-                    <td><span className="nm" title={d.name}>{d.name}</span></td>
-                    <td><span className={"pv "+cc}>¥{fmtInt(d.price)??"—"}</span></td>
-                    <td><div className={"chgc "+cc}><span className="ca">{sg}{fmtInt(d.change)??"—"}</span><span className="cp">{sg}{fmt(d.changePct)??"—"}%</span></div></td>
-                    <M v={d.per!=null?fmt(d.per)+"×":null} cls="hs"/>
-                    <M v={d.pbr!=null?fmt(d.pbr)+"×":null} cls="hs"/>
-                    <M v={d.eps!=null?"¥"+fmt(d.eps):null} cls="hm"/>
-                    <M v={d.divPerShare!=null?"¥"+fmt(d.divPerShare):null} gold cls="hm"/>
-                    <M v={d.divYield!=null?fmt(d.divYield)+"%":null} gold cls="hm"/>
-                    <M v={d.payoutRatio!=null?fmt(d.payoutRatio,1)+"%":null} cls="hm"/>
-                    <td><button className="del" onClick={()=>remove(r.code)}>×</button></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="foot">
-          データ提供: Finnhub（準リアルタイム） · 60秒ごと自動更新 · APIキーはこのデバイスのみ保存（外部送信なし）<br/>
-          投資判断には必ず公式情報をご確認ください
-        </div>
-      </div>
-
-      {toast&&<div className={"toast "+(toast.type==="ok"?"to":"te")}>{toast.text}</div>}
-    </div>
-  );
+  });
+  renderTable();
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+/* ═══════════════════════════════════════════════════════════════
+   FETCH BATCH (sequential to avoid rate limit)
+═══════════════════════════════════════════════════════════════ */
+async function fetchBatch(codes) {
+  const results = [];
+  for (const code of codes) {
+    try {
+      results.push({ status: "fulfilled", value: await fetchStock(code) });
+    } catch(e) {
+      results.push({ status: "rejected", reason: e });
+    }
+  }
+  return results;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ADD STOCK
+═══════════════════════════════════════════════════════════════ */
+async function addStock() {
+  const code = document.getElementById("ticker-in").value.trim().replace(/\D/g,"");
+  if (!code) return;
+  if (rows.find(r => r.code === code)) { showToast(`${code} は追加済みです`); return; }
+  document.getElementById("ticker-in").value = "";
+
+  rows.push({ code, name: code, data: null, loading: true, error: null });
+  saveTickerList();
+  renderTable();
+
+  try {
+    const d = await fetchStock(code);
+    const idx = rows.findIndex(r => r.code === code);
+    if (idx >= 0) { rows[idx] = { ...rows[idx], data: d, name: d.name, loading: false }; }
+    saveTickerList();
+    renderTable();
+  } catch(e) {
+    const idx = rows.findIndex(r => r.code === code);
+    if (idx >= 0) { rows[idx] = { ...rows[idx], loading: false, error: e.message }; }
+    showToast(`${code}: ${e.message}`);
+    renderTable();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REMOVE / CLEAR
+═══════════════════════════════════════════════════════════════ */
+function removeStock(code) {
+  rows = rows.filter(r => r.code !== code);
+  saveTickerList();
+  renderTable();
+}
+function clearAll() {
+  rows = [];
+  saveTickerList();
+  renderTable();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRESET
+═══════════════════════════════════════════════════════════════ */
+async function loadPreset(key) {
+  const list = PRESETS[key];
+  const toAdd = list.filter(p => !rows.find(r => r.code === p.code));
+  if (!toAdd.length) { showToast("既に全銘柄が追加されています"); return; }
+
+  toAdd.forEach(p => rows.push({ code: p.code, name: p.name, data: null, loading: true, error: null }));
+  saveTickerList();
+  renderTable();
+
+  const codes = toAdd.map(p => p.code);
+  const results = await fetchBatch(codes);
+  applyResults(codes, results);
+  saveTickerList();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REFRESH ALL
+═══════════════════════════════════════════════════════════════ */
+async function refreshAll() {
+  if (!rows.length || busy) return;
+  busy = true;
+  setRefreshBusy(true);
+  rows = rows.map(r => ({ ...r, loading: true }));
+  renderTable();
+
+  const codes = rows.map(r => r.code);
+  const results = await fetchBatch(codes);
+  applyResults(codes, results);
+  busy = false;
+  setRefreshBusy(false);
+}
+
+function setRefreshBusy(b) {
+  const btn  = document.getElementById("ref-btn");
+  const icon = document.getElementById("ref-icon");
+  const lbl  = document.getElementById("ref-label");
+  btn.disabled = b;
+  icon.classList.toggle("spinning", b);
+  lbl.textContent = b ? "更新中..." : "更新";
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AUTO REFRESH (60s)
+═══════════════════════════════════════════════════════════════ */
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    if (rows.length && !busy && workerUrl) refreshAll();
+  }, 60000);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SAVE TICKER LIST
+═══════════════════════════════════════════════════════════════ */
+function saveTickerList() {
+  lsSet(LS_TICKERS, rows.map(r => ({ code: r.code, name: r.name })));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESTORE ON LOAD
+═══════════════════════════════════════════════════════════════ */
+async function restore() {
+  const saved = lsGet(LS_TICKERS, []);
+  if (!saved.length) return;
+  rows = saved.map(t => ({ code: t.code, name: t.name || t.code, data: null, loading: !!workerUrl, error: null }));
+  renderTable();
+  if (workerUrl) {
+    const codes = rows.map(r => r.code);
+    const results = await fetchBatch(codes);
+    applyResults(codes, results);
+    saveTickerList();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RENDER TABLE
+═══════════════════════════════════════════════════════════════ */
+function renderTable() {
+  const tbody = document.getElementById("stock-tbody");
+  document.getElementById("row-count").textContent = rows.length;
+
+  if (!rows.length) {
+    tbody.innerHTML = `
+      <tr><td colspan="13">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <div class="empty-text">
+            証券コードを入力して銘柄を追加してください<br>
+            または上のプリセットボタンをお試しください
+          </div>
+        </div>
+      </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const fl = flashMap[r.code] || "";
+
+    if (r.loading) return `
+      <tr class="${fl}">
+        <td><div class="code-cell"><span class="code-num">${r.code}</span><span class="code-ex">東証</span></div></td>
+        <td><span class="name-text">${r.name}</span></td>
+        <td colspan="10" class="loading-cell"><span class="spinner-inline"></span>取得中...</td>
+        <td><button class="del-btn" onclick="removeStock('${r.code}')">×</button></td>
+      </tr>`;
+
+    if (r.error) return `
+      <tr>
+        <td><div class="code-cell"><span class="code-num">${r.code}</span><span class="code-ex">東証</span></div></td>
+        <td><span class="name-text">${r.name}</span></td>
+        <td colspan="10" class="error-cell">⚠ ${escHtml(r.error)}</td>
+        <td><button class="del-btn" onclick="removeStock('${r.code}')">×</button></td>
+      </tr>`;
+
+    const d   = r.data;
+    const up  = d.change > 0;
+    const dn  = d.change < 0;
+    const cc  = up ? "color-up" : dn ? "color-dn" : "color-flat";
+    const sg  = d.change >= 0 ? "+" : "";
+
+    return `
+      <tr class="${fl}">
+        <td>
+          <div class="code-cell">
+            <span class="code-num ${cc}">${d.code}</span>
+            <span class="code-ex">東証プライム</span>
+          </div>
+        </td>
+        <td><span class="name-text" title="${escHtml(d.name)}">${escHtml(d.name)}</span></td>
+        <td><span class="price-val ${cc}">¥${fmtInt(d.price) ?? "—"}</span></td>
+        <td>
+          <div class="chg-cell ${cc}">
+            <span class="chg-abs">${sg}${fmtInt(d.change) ?? "—"}</span>
+            <span class="chg-pct">${sg}${fmt(d.changePct) ?? "—"}%</span>
+          </div>
+        </td>
+        <td class="hide-md">${naCell(d.per != null ? fmt(d.per)+"×" : null)}</td>
+        <td class="hide-md">${naCell(d.pbr != null ? fmt(d.pbr)+"×" : null)}</td>
+        <td class="hide-lg">${naCell(d.eps != null ? "¥"+fmt(d.eps) : null)}</td>
+        <td class="hide-lg">${naCell(d.divPerShare != null ? "¥"+fmtInt(d.divPerShare) : null, "metric-gold")}</td>
+        <td class="hide-lg">${naCell(d.divYield != null ? fmt(d.divYield)+"%" : null, "metric-gold")}</td>
+        <td class="hide-xl">${naCell(d.payoutRatio != null ? fmt(d.payoutRatio,1)+"%" : null)}</td>
+        <td class="hide-xl">${naCell(d.roe != null ? fmt(d.roe,1)+"%" : null, "metric-green")}</td>
+        <td class="hide-xl">${naCell(d.equityRatio != null ? fmt(d.equityRatio,1)+"%" : null, "metric-green")}</td>
+        <td><button class="del-btn" onclick="removeStock('${r.code}')">×</button></td>
+      </tr>`;
+  }).join("");
+}
+
+function escHtml(s) {
+  return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYBOARD SHORTCUT
+═══════════════════════════════════════════════════════════════ */
+document.getElementById("ticker-in").addEventListener("keydown", e => {
+  if (e.key === "Enter") addStock();
+});
+document.getElementById("worker-in").addEventListener("keydown", e => {
+  if (e.key === "Enter") saveWorker();
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════ */
+initWorker();
+restore();
+startAutoRefresh();
 </script>
 </body>
 </html>
